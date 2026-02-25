@@ -101,24 +101,24 @@ export default function SahidSKChat() {
     try {
       const apiMessages = updatedMessages.map(({ role, content }) => ({ role, content }));
 
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": "sk-ant-api03-YOUR_REAL_KEY_HERE",
-          "anthropic-version": "2023-06-01",
-          "anthropic-dangerous-direct-browser-access": "true"
-        },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          system: SYSTEM_PROMPT,
-          messages: apiMessages,
-        }),
-      });
+      const response = await fetch(
+  `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyCso2r9uATAIiVC9O00h_QDn9LIWW-02kM`,
+  {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      contents: apiMessages.map(m => ({
+        role: m.role === "assistant" ? "model" : "user",
+        parts: [{ text: m.content }]
+      }))
+    }),
+  }
+);
 
-      const data = await response.json();
-      const reply = data.content?.map((b) => b.text || "").join("") || "Hmm, couldn't get a response. Try again?";
+const data = await response.json();
+const reply = data.candidates?.[0]?.content?.parts?.[0]?.text 
+  || "Hmm, couldn't get a response. Try again?";
 
       setMessages((prev) => [...prev, { role: "assistant", content: reply, time: formatTime() }]);
     } catch (err) {
