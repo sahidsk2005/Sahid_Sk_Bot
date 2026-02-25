@@ -99,30 +99,28 @@ export default function SahidSKChat() {
     }
 
     try {
-      const apiMessages = updatedMessages.map(({ role, content }) => ({ role, content }));
+      const apiMessages = updatedMessages.map(({ role, content }) => ({
+        role: role === "assistant" ? "model" : "user",
+        parts: [{ text: content }]
+      }));
 
       const response = await fetch(
-  `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyCso2r9uATAIiVC9O00h_QDn9LIWW-02kM`,
-  {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-      contents: apiMessages.map(m => ({
-        role: m.role === "assistant" ? "model" : "user",
-        parts: [{ text: m.content }]
-      }))
-    }),
-  }
-);
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=YOUR_GEMINI_KEY_HERE",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+            contents: apiMessages
+          }),
+        }
+      );
 
-const data = await response.json();
-const reply = data.candidates?.[0]?.content?.parts?.[0]?.text 
-  || "Hmm, couldn't get a response. Try again?";
+      const data = await response.json();
+      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text
+        || "Hmm, couldn't get a response. Try again?";
 
       setMessages((prev) => [...prev, { role: "assistant", content: reply, time: formatTime() }]);
-    } catch (err) {
-      setError("Something went wrong. Check your connection and try again.");
     } finally {
       setIsLoading(false);
     }
