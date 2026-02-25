@@ -99,28 +99,40 @@ export default function SahidSKChat() {
     }
 
     try {
-      const apiMessages = updatedMessages.map(({ role, content }) => ({
+      const GEMINI_KEY = "AIzaSyCso2r9uATAIiVC9O00h_QDn9LIWW-02kM";
+
+      const geminiMessages = updatedMessages.map(({ role, content }) => ({
         role: role === "assistant" ? "model" : "user",
         parts: [{ text: content }]
       }));
 
       const response = await fetch(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=YOUR_GEMINI_KEY_HERE",
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-            contents: apiMessages
+            contents: geminiMessages,
+            generationConfig: { maxOutputTokens: 1000, temperature: 0.9 }
           }),
         }
       );
 
+      if (!response.ok) {
+        const errData = await response.json();
+        console.error("Gemini API error:", errData);
+        throw new Error("API error: " + response.status);
+      }
+
       const data = await response.json();
-      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text
+      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim()
         || "Hmm, couldn't get a response. Try again?";
 
       setMessages((prev) => [...prev, { role: "assistant", content: reply, time: formatTime() }]);
+    } catch (err) {
+      console.error("Error:", err);
+      setError("Something went wrong. Check your connection and try again.");
     } finally {
       setIsLoading(false);
     }
