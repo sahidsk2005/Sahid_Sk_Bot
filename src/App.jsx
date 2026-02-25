@@ -99,7 +99,7 @@ export default function SahidSKChat() {
     }
 
     try {
-      const GEMINI_KEY = "AIzaSyCso2r9uATAIiVC9O00h_QDn9LIWW-02kM";
+      const GEMINI_KEY = "AIzaSyB1EyUS8VGt00zYBigCNu42Oa_E6jU7E0w";
 
       const geminiMessages = updatedMessages.map(({ role, content }) => ({
         role: role === "assistant" ? "model" : "user",
